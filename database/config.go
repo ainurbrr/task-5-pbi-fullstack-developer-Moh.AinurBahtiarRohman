@@ -3,9 +3,9 @@ package database
 import (
 	"fmt"
 
+	"github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"task-5-vix-btpns-Moh.AinurBahtiarRohman/models"
 )
 
 var DB *gorm.DB

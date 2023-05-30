@@ -1,10 +1,12 @@
 package main
 
-import "task-5-vix-btpns-Moh.AinurBahtiarRohman/router"
-import "task-5-vix-btpns-Moh.AinurBahtiarRohman/database"
+import (
+	"github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/database"
+	"github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/router"
+)
 
 func main() {
 	database.Init()
-	r := router.RouteInit()
-	r.Run(":8080")
+	e := router.RouteInit()
+	e.Start(":8080")
 }

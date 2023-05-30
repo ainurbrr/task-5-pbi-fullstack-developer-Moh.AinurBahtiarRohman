@@ -11,7 +11,7 @@ type Photo struct {
 	Title    string `json:"title" form:"title" valid:"required~Photo Title is Required"`
 	Caption  string `json:"caption" form:"caption"`
 	PhotoURL string `json:"photo_url" form:"photo_url" valid:"required~Photo URL is Required"`
-	UserID   int    `json:"user_id"`
+	UserID   uint    `json:"user_id"`
 	User     *User
 }
 

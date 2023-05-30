@@ -3,11 +3,11 @@ package helpers
 import (
 	"errors"
 
+	"github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/constants"
 	"github.com/dgrijalva/jwt-go"
-	"task-5-vix-btpns-Moh.AinurBahtiarRohman/constants"
 )
 
-func GenerateToken(userID int) (string, error) {
+func GenerateToken(userID uint) (string, error) {
 	var SECRET_KEY = []byte(constants.SECRET_JWT)
 
 	//set payload

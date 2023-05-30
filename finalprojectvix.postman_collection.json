@@ -1,0 +1,257 @@
+{
+	"info": {
+		"_postman_id": "8d6877b9-dd57-4658-b809-2c27c245e66e",
+		"name": "finalprojectvix",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20733750"
+	},
+	"item": [
+		{
+			"name": "Register User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "ainurr",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "ainurbahtiarr@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "phone_number",
+							"value": "087850995940",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "kocorr",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"register"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "ainur",
+							"disabled": true
+						},
+						{
+							"key": "email",
+							"value": "ainurbahtiarr@gmail.com",
+							"disabled": true
+						},
+						{
+							"key": "phone_number",
+							"value": "087850995940",
+							"disabled": true
+						},
+						{
+							"key": "password",
+							"value": "kocorr",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\" : \"ainurbahtiarr@gmail.com\",\r\n    \"password\" : \"kocorr\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit User",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"ainurbrr\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get Photo",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Post Photo",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyfQ.xwElTPwT5FuKXE8IZhRKHhNYDqsLhE3I1Yrr5MnresE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "title",
+							"value": "profile",
+							"type": "text"
+						},
+						{
+							"key": "caption",
+							"value": "foto profile",
+							"type": "text"
+						},
+						{
+							"key": "photo_profile",
+							"type": "file",
+							"src": "/C:/Users/ainurbr/Downloads/images (1).jpeg"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/photos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"photos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Photo",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyfQ.xwElTPwT5FuKXE8IZhRKHhNYDqsLhE3I1Yrr5MnresE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "update_profile",
+							"type": "file",
+							"src": "/C:/Users/ainurbr/Downloads/images.jpeg"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/photos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"photos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Photo",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

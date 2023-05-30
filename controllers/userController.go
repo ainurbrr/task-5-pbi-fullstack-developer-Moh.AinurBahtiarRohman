@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	userResponse "github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/app"
+	"github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/helpers"
+	"github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/models"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
-	"task-5-vix-btpns-Moh.AinurBahtiarRohman/helpers"
-	"task-5-vix-btpns-Moh.AinurBahtiarRohman/models"
-	userResponse "task-5-vix-btpns-Moh.AinurBahtiarRohman/app"
 )
 
 type userController struct {
@@ -19,16 +19,16 @@ func NewUserController(db *gorm.DB) *userController {
 	return &userController{db}
 }
 
-func (h *userController) Register(c *echo.Context) {
+func (h *userController) Register(c echo.Context) (err error) {
 	var user models.User
-	c.ShouldBindJSON(&user)
+	c.Bind(&user)
 
 	user.Password = helpers.HashPassword(user.Password)
 
-	err := h.db.Debug().Create(&user).Error
+	err = h.db.Debug().Create(&user).Error
 	if err != nil {
 		errors := helpers.FormatValidationError(err)
-		errorMessage := echo.H{
+		errorMessage := echo.Map{
 			"errors": errors,
 		}
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", errorMessage, err.Error())
@@ -39,16 +39,16 @@ func (h *userController) Register(c *echo.Context) {
 	formatter := userResponse.FormatUserResponse(user, "")
 	response := helpers.ApiResponse(http.StatusOK, "success", formatter, "User Registered Succesfully")
 
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
-func (h *userController) Login(c *echo.Context) {
+func (h *userController) Login(c echo.Context) (err error) {
 	var user models.User
 
-	c.ShouldBindJSON(&user)
+	c.Bind(&user)
 
 	Inputpassword := user.Password
-	err := h.db.Debug().Where("email = ?", user.Email).Find(&user).Error
+	err = h.db.Debug().Where("email = ?", user.Email).Find(&user).Error
 	if err != nil {
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", nil, "Login Failed")
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -72,19 +72,19 @@ func (h *userController) Login(c *echo.Context) {
 	formatter := userResponse.FormatUserResponse(user, token)
 	response := helpers.ApiResponse(http.StatusOK, "success", formatter, "User Login Succesfully")
 
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
-func (h *userController) Update(c *echo.Context) {
+func (h *userController) Update(c echo.Context) (err error) {
 	var oldUser models.User
 	var newUser models.User
 
 	id := c.Param("userId")
 
-	err := h.db.First(&oldUser, id).Error
+	err = h.db.First(&oldUser, id).Error
 	if err != nil {
 		errors := helpers.FormatValidationError(err)
-		errorMessage := echo.H{
+		errorMessage := echo.Map{
 			"errors": errors,
 		}
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", errorMessage, err.Error())
@@ -92,7 +92,7 @@ func (h *userController) Update(c *echo.Context) {
 		return
 	}
 
-	err = json.NewDecoder(c.Request.Body).Decode(&newUser)
+	err = json.NewDecoder(c.Request().Body).Decode(&newUser)
 	if err != nil {
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", nil, err.Error())
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -107,14 +107,14 @@ func (h *userController) Update(c *echo.Context) {
 	}
 
 	response := helpers.ApiResponse(http.StatusOK, "success", nil, "User Updated Succesfully")
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
-func (h *userController) Delete(c *echo.Context) {
+func (h *userController) Delete(c echo.Context) (err error) {
 	var user models.User
 
 	id := c.Param("userId")
-	err := h.db.First(&user, id).Error
+	err = h.db.First(&user, id).Error
 	if err != nil {
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", nil, err.Error())
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -129,5 +129,5 @@ func (h *userController) Delete(c *echo.Context) {
 	}
 
 	response := helpers.ApiResponse(http.StatusOK, "success", nil, "User Deleted Succesfully")
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }

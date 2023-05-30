@@ -1,9 +1,9 @@
 package app
 
-import "task-5-vix-btpns-Moh.AinurBahtiarRohman/models"
+import "github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/models"
 
 type UserResponse struct {
-	ID       uint    `json:"id"`
+	ID       uint   `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 }

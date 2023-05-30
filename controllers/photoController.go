@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"io"
 	"net/http"
+	"os"
 
+	photoResponse "github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/app"
+	"github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/helpers"
+	"github.com/ainurbrr/task-5-vix-btpns-Moh.AinurBahtiarRohman/models"
 	"github.com/google/uuid"
-	photoResponse "task-5-vix-btpns-Moh.AinurBahtiarRohman/app"
-	"task-5-vix-btpns-Moh.AinurBahtiarRohman/helpers"
-	"task-5-vix-btpns-Moh.AinurBahtiarRohman/models"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -20,9 +22,9 @@ func NewPhotoController(db *gorm.DB) *photoController {
 	return &photoController{db}
 }
 
-func (h *photoController) Get(c *echo.Context) {
+func (h *photoController) Get(c echo.Context) (err error) {
 	var userPhoto models.Photo
-	err := h.db.Preload("User").Find(&userPhoto).Error
+	err = h.db.Preload("User").Find(&userPhoto).Error
 
 	if err != nil {
 		response := helpers.ApiResponse(http.StatusBadRequest, "error", nil, "Failed to Get Your Photo")
@@ -36,19 +38,19 @@ func (h *photoController) Get(c *echo.Context) {
 		return
 	}
 
-	formatter := photoResponse.FormatPhotoResponse(&userPhoto, "")
+	formatter := photoResponse.FormatPhotoResponse(&userPhoto)
 	response := helpers.ApiResponse(http.StatusOK, "success", formatter, "Successfully Fetch User Photo")
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
-func (h *photoController) Create(c *echo.Context) {
+func (h *photoController) Create(c echo.Context) (err error) {
 	var userPhoto models.Photo
 	var countPhoto int64
-	currentUser := c.MustGet("currentUser").(models.User)
+	currentUser := c.Get("currentUser").(models.User)
 
 	h.db.Model(&userPhoto).Where("user_id = ?", currentUser.ID).Count(&countPhoto)
 	if countPhoto > 0 {
-		data := echo.H{
+		data := echo.Map{
 			"is_uploaded": false,
 		}
 		response := helpers.ApiResponse(http.StatusBadRequest, "error", data, "You Already Have a Photo")
@@ -57,10 +59,10 @@ func (h *photoController) Create(c *echo.Context) {
 	}
 
 	var input models.Photo
-	err := c.Bind(&input)
+	err = c.Bind(&input)
 	if err != nil {
 		errors := helpers.FormatValidationError(err)
-		errorMessages := echo.H{"errors": errors}
+		errorMessages := echo.Map{"errors": errors}
 
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", errorMessages, "Failed to Upload User Photo")
 		c.JSON(http.StatusBadRequest, response)
@@ -70,7 +72,7 @@ func (h *photoController) Create(c *echo.Context) {
 	file, err := c.FormFile("photo_profile")
 	if err != nil {
 		errors := helpers.FormatValidationError(err)
-		errorMessages := echo.H{"errors": errors}
+		errorMessages := echo.Map{"errors": errors}
 
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", errorMessages, "Failed to Upload User Photo")
 		c.JSON(http.StatusUnprocessableEntity, response)
@@ -78,12 +80,27 @@ func (h *photoController) Create(c *echo.Context) {
 	}
 
 	extension := file.Filename
-	path := "static/images/" + uuid.New().String() + extension
+	path := "images/avatar/" + uuid.New().String() + extension
 
-	err = c.SaveUploadedFile(file, path)
+	//upload the avatar
+	src, err := file.Open()
 	if err != nil {
-		data := echo.H{"is_uploaded": false}
+		return
+	}
+	defer src.Close()
+	// Create a new file on disk
+	dst, err := os.Create(path)
+	if err != nil {
+		return
+	}
+	defer dst.Close()
+	// Copy the uploaded file to the destination file
+	if _, err = io.Copy(dst, src); err != nil {
+		return
+	}
 
+	if err != nil {
+		data := echo.Map{"is_uploaded": false}
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", data, "Failed to Upload User Photo")
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
@@ -91,12 +108,12 @@ func (h *photoController) Create(c *echo.Context) {
 
 	h.InsertPhoto(input, path, currentUser.ID)
 
-	data := echo.H{"is_uploaded": true}
+	data := echo.Map{"is_uploaded": true}
 	response := helpers.ApiResponse(http.StatusOK, "success", data, "Photo Profile Successfully Uploaded")
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
-func (h *photoController) InsertPhoto(userPhoto models.Photo, fileLocation string, currUserID int) error {
+func (h *photoController) InsertPhoto(userPhoto models.Photo, fileLocation string, currUserID uint) error {
 	savePhoto := models.Photo{
 		UserID:   currUserID,
 		Title:    userPhoto.Title,
@@ -111,19 +128,19 @@ func (h *photoController) InsertPhoto(userPhoto models.Photo, fileLocation strin
 	return nil
 }
 
-func (h *photoController) Update(c *echo.Context) {
+func (h *photoController) Update(c echo.Context) (err error) {
 	var userPhoto models.Photo
-	currentUser := c.MustGet("currentUser").(models.User)
+	currentUser := c.Get("currentUser").(models.User)
 
-	err := h.db.Where("user_id = ?", currentUser.ID).Find(&userPhoto).Error
+	err = h.db.Where("user_id = ?", currentUser.ID).Find(&userPhoto).Error
 	if err != nil {
 		response := helpers.ApiResponse(http.StatusBadRequest, "error", err, "Photo Profile Failed to Update")
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	var input models.Photo
-	err = c.ShouldBind(&input)
+	var input = userPhoto
+	err = c.Bind(&input)
 	if err != nil {
 		response := helpers.ApiResponse(http.StatusBadRequest, "error", err, "Photo Profile Failed to Update")
 		c.JSON(http.StatusBadRequest, response)
@@ -132,28 +149,46 @@ func (h *photoController) Update(c *echo.Context) {
 
 	file, err := c.FormFile("update_profile")
 	if err != nil {
-		data := echo.H{"is_uploaded": false}
-
+		data := echo.Map{"is_uploaded": false}
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", data, "Failed to Update User Photo")
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
 	extension := file.Filename
-	path := "static/images/" + uuid.New().String() + extension
+	path := "images/avatar/" + uuid.New().String() + extension
 
-	err = c.SaveUploadedFile(file, path)
+	//upload the avatar
+	src, err := file.Open()
+	if err != nil {
+		return
+	}
+	defer src.Close()
+	// Create a new file on disk
+	dst, err := os.Create(path)
+	if err != nil {
+		return
+	}
+	defer dst.Close()
+	// Copy the uploaded file to the destination file
+	if _, err = io.Copy(dst, src); err != nil {
+		return
+	}
+
 	if err != nil {
 		response := helpers.ApiResponse(http.StatusBadRequest, "error", err, "Photo Profile Failed to Upload")
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
+	c.Bind(userPhoto)
+	userPhoto.UserID = currentUser.ID
+	userPhoto.User = &currentUser
 
 	h.UpdatePhoto(input, &userPhoto, path)
 
-	data := photoResponse.FormatPhotoResponse(&userPhoto, "regular")
+	data := photoResponse.FormatPhotoResponse(&userPhoto)
 	response := helpers.ApiResponse(http.StatusOK, "success", data, "Photo Profile Successfully Updated")
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
 func (h *photoController) UpdatePhoto(oldPhoto models.Photo, newPhoto *models.Photo, path string) error {
@@ -161,7 +196,7 @@ func (h *photoController) UpdatePhoto(oldPhoto models.Photo, newPhoto *models.Ph
 	newPhoto.Caption = oldPhoto.Caption
 	newPhoto.PhotoURL = path
 
-	err := h.db.Save(&newPhoto).Error
+	err := h.db.Updates(&newPhoto).Error
 	if err != nil {
 		return err
 	}
@@ -169,13 +204,13 @@ func (h *photoController) UpdatePhoto(oldPhoto models.Photo, newPhoto *models.Ph
 	return nil
 }
 
-func (h *photoController) Delete(c *echo.Context) {
+func (h *photoController) Delete(c echo.Context) (err error) {
 	var userPhoto models.Photo
-	currentUser := c.MustGet("currentUser").(models.User)
+	currentUser := c.Get("currentUser").(models.User)
 
-	err := h.db.Where("user_id = ?", currentUser.ID).Delete(&userPhoto).Error
+	err = h.db.Where("user_id = ?", currentUser.ID).Delete(&userPhoto).Error
 	if err != nil {
-		data := echo.H{
+		data := echo.Map{
 			"is_deleted": false,
 		}
 
@@ -184,10 +219,10 @@ func (h *photoController) Delete(c *echo.Context) {
 		return
 	}
 
-	data := echo.H{
+	data := echo.Map{
 		"is_deleted": true,
 	}
 
 	response := helpers.ApiResponse(http.StatusOK, "success", data, "User Photo Successfully Deleted")
-	c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
